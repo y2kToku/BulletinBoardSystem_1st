@@ -1,3 +1,11 @@
+<!--*****************************************************************************************
+画面名：ログイン画面
+機能概要：掲示板を利用するアカウントのログインをする
+	１.アカウント名とパスワードのAND検索で重複チェック
+	２.ログインボタン押下後、カテゴリ選択画面に遷移する
+	３.「コチラ」リンク押下後、サインアップ画面に遷移する
+*****************************************************************************************-->
+
 <!--<?php
 // require 'password.php';
 // // セッション開始
@@ -77,11 +85,12 @@
 <head>
 	<meta charset="utf-8">
 	<!-- TODO CSS読み込み -->
+	<link rel="stylesheet" type="text/css" href="basic.css" />
 	<title>ログイン</title>
 </head>
 <body>
-	<div id="wrapper" style="width: 1440px; height: 900px; background-color: #F0FFFF;">
-		<div style="height: 30px;" id="pageHeader"></div>
+	<div id="wrapper">
+		<div id="pageHeader"></div>
 		<div style="height: auto;">
 			<!-- ロゴ＆説明 -->
 			<div style="height: 240px;">
@@ -93,7 +102,7 @@
 				</div>
 			</div>
 			<!-- ユーザ入力フォーム -->
-			<form id="loginForm" name="loginForm" action="" method="POST">
+			<form id="loginForm" name="loginForm" action="dispCategories.php" method="POST">
 				<div style="height: 600px;">
 					<table>
 						<tr>
@@ -118,17 +127,24 @@
 								<p style="color: red;">＊</p>
 							</td>
 						</tr>
-						<tr style="height: 1.4rem"></tr>
+						<tr id="baseSpace1"></tr>
 						<tr>
 							<td>
 								<input type="submit" id="login" name="login" value="ログイン">
 							</td>
 						</tr>
+						<tr>
+						<td>
+							初めての方は
+							<a href="http://localhost/BulletinBoardSystem_1st/signup.html">コチラ</a>
+							からどうぞ！
+						</td>
+						</tr>
 					</table>
 				</div>
 			</form>
 		</div>
-		<div style="height: 30px;" id="pageFooter"></div>
+		<div id="pageFooter"></div>
 	</div>
 </body>
 </html>
