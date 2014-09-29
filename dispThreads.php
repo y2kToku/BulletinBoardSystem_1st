@@ -7,8 +7,6 @@
 	４.スレッドの削除は、管理者しかできない
 *****************************************************************************************-->
 
-
-
 <html>
 <head>
 	<meta charset="utf-8">
@@ -26,38 +24,72 @@
 					<!-- 戻るボタン -->
 					<input type="button" name="btnBack" value="戻る" onclick="history.back()">
 					<!-- TODO 何か画像を添付する -->
+					<img style="height: 100px; width=: 100px;" src="sample.jpg">
 				</div>
 				<div style="float: left; width: 70%;">
 					<p><h2>とくとく掲示板β ver. 0.0.1</h2></p>
+					<!-- スレッド作成 -->
+					<form id="makeThreadForm" name="makeThreadForm" action="makeThread.php" method="POST">
+						名前：<input type="text" name="name" size="30" value="" /><br />
+						コメント：<textarea name="content" cols="30" rows="5"></textarea><br />
+						<div id="baseSpace1">
+						<input type="submit" name="make" value="作成" />
+					</form>
 				</div>
 			</div>
 			<!-- カテゴリ選択フォーム -->
-			<form id="dispThreadsForm" name="dispThreadsForm" action="" method="GET">
+			<!-- <form id="dispThreadsForm" name="dispThreadsForm" action="" method="GET"> -->
 				<div style="height: 600px;">
-					<!-- スレッド作成 -->
-					<table>
-						<tr>
-							<td>アカウント名：</td>
-							<td></td>
-						</tr>
-						<tr>
-							<!-- スレッド内容記入欄 -->
-						</tr>
-						<tr>
-							<input type="button" name="createThread" value="作成">
-						</tr>
-					</table>
 					<!-- 各スレッド一覧表示 -->
-					<table>
+					<?php
+						// サーバ接続
+						$link = mysql_connect('localhost', 'root', 'root');
+						if (!$link) {
+						    die('接続失敗です。'.mysql_error());
+						}
+						// DB選択
+						$db_selected = mysql_select_db('BulltinBoardSystem', $link);
+						if (!$db_selected){
+						    die('DB選択失敗です。'.mysql_error());
+						}
+
+						// print('<p>接続に成功しました。</p>');
+
+						// MySQLに対する処理
+						mysql_set_charset('utf8');
+						// クエリ設定、実行
+						$sql = "SELECT * FROM threads";
+						$result = mysql_query($sql);
+						if (!$result) {
+							exit('データを取得できませんでした。');
+						}
+
+						// DBから画面に表示する値を取得し、配列に入れる
+						$dispArray[] = "";
+						$cntArray = 0;
+						while ($row = mysql_fetch_assoc($result)) {
+							$dispArray[$cntArray][] = $row;
+							$cntArray ++;
+						}
+
+						// サーバ切断
+						$close_flag = mysql_close($link);
+						if ($close_flag){
+							//print('<p>切断に成功しました。</p>');
+						}
+					?>
+
+					<!-- 上記で配列に格納した値を画面用に取り出す -->
+					<?php for ($i=0; $i < count($dispArray); $i++) { ?>
+						<table>
 						<tr>
-							<td>
-								<!-- 通番 -->
-								<!-- アカウント名 -->
-								<!-- 作成日時 -->
+							<td>通番：<?php echo $dispArray[$i][0]['id']; ?>
+								 作成者名：<?php echo $dispArray[$i][0]['creater']; ?>
+								 作成日時：<?php echo $dispArray[$i][0]['created']; ?>
 							</td>
 							<td>
 								<!-- 写真 -->
-								<!-- スレッド内容表示欄 -->
+								内容：<?php echo $dispArray[$i][0]['content']; ?>
 							</td>
 							<td id="baseSpace1">
 								<input type="button" name="mod" value="修正">
@@ -65,11 +97,13 @@
 							</td>
 						</tr>
 					</table>
+					<?php } ?>
+
 					<!-- ページャー -->
 					<div id="baseSpace1">
 					</div>
 				</div>
-			</form>
+			<!-- </form> -->
 		</div>
 		<div id="pageFooter"></div>
 	</div>

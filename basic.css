@@ -1,5 +1,25 @@
+// 画面全体構成部品
 #wrapper {
 	width: 1440px;
 	height: 900px;
 	background-color: #F0FFFF;
 }
+#pageHeader {
+	height: 30px;
+}
+#pageFooter {
+	height: 30px;
+}
+
+// 画面詳細構成部品
+#baseSpace1 {
+	height: 1.4rem;
+}
+
+// ログイン画面
+
+// サインアップ画面
+
+// カテゴリ表示画面
+
+// スレッド表示画面
