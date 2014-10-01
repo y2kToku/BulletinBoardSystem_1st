@@ -1,51 +1,1 @@
-<html>
-<head>
-	<meta charset="utf-8">
-	<title></title>
-	<body>
-		<?php
-		try {
-			// ログイン画面から変数を取得
-			$name = $_POST['name'];
-			$password = $_POST['password'];
-			// エラーメッセージの初期化
-			$errorMsg = "";
-
-			// 変数の入力チェック
-			if ($name == "") {
-				print 'アカウント名が入力されていません。<br />'
-			}
-			if ($password == "") {
-				print 'パスワードが入力されていません。<br />'
-			}
-
-			// DB接続
-			$dsn = 'msql_dbname=BulletinBoardSystem;host=localhost';
-			$user = 'root';
-			$psw = 'root';
-			$dbh = new PDO($dsn,$user,$psw);
-			$dbh->query('SET NAMES utf8');
-
-			// クエリの実行
-			$sql = 'SELECT * from login_users where name = '.$name.' AND password = '.$password.';';
-			$stmt = $dbh->prepare($sql);
-			$stmt->execute();
-
-			$dbh = null;
-			$rec = $stmt->fetch(PDO::FETCH_ASSOC);
-			if ($rec) {
-				// ログイン処理成功時、
-				header("location: http://localhost/BulletinBoardSystem_1st/dispCategories.php");
-  				exit();
-			}
-		} catch (Exception $e) {
-			header("location: http://localhost/BulletinBoardSystem_1st/login.php");
-			print 'アカウント名とパスワードのいづれかが一致しません。もう一度、入力してください。';
-			exit();
-		}
-
-
-		?>
-	</body>
-</head>
-</html>
+<!--*****************************************************************************************画面名：ログインチェック機能概要：掲示板を利用するアカウントのログインチェックをする	１.アカウント名とパスワードでAND検索でレコードチェック	２.ログインボタン押下後、カテゴリ選択画面に遷移する	３.*****************************************************************************************--><?php	// セッション読み込み	session_start();	// ログイン画面から変数を取得	$mailAddress = $_POST['mailAddress'];	$password = $_POST['password'];	// エラーフラグ	$err_flg = false;	// レコード数	$cnt = 0;	// 変数の入力チェック	if ($mailAddress == "") {		echo "アカウントが入力されていません。<br />";		$err_flg = true;	}	if ($password == "") {		echo "パスワードが入力されていません。<br />";		$err_flg = true;	}	if (!$err_flg) {		// サーバ接続		$link = mysql_connect('localhost', 'root', 'root');		if (!$link) {		    die('接続失敗です。'.mysql_error());		}		// DB選択		$db_selected = mysql_select_db('BulltinBoardSystem', $link);		if (!$db_selected){		    die('DB選択失敗です。'.mysql_error());		}		// MySQLに対する処理		mysql_set_charset('utf8');		// アカウント情報の重複チェック		$sql_check = "SELECT COUNT(*) AS cnt FROM login_users WHERE address = '$mailAddress' AND password = '$password' AND del_flg = 0;";		$result_check = mysql_query($sql_check);		$row = mysql_fetch_assoc($result_check);		$cnt = $row['cnt'];		if ($cnt == 0) {			exit('ログインできません。<br />アカウントとパスワードをもう一度確認してください。<br />');		} else {			// ログイン処理成功時、セッションにアカウント情報を格納し、カテゴリ表示画面に遷移する			$_SESSION['login'] = "OK";			$_SESSION['mailAddress'] = $mailAddress;			$_SESSION['password'] = $password;			// カテゴリ表示画面に遷移			include('dispCategories.php');		}	}?>

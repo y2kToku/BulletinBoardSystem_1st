@@ -32,10 +32,10 @@
 					<table>
 						<tr>
 							<td style="width: 40%; text-align: right;">
-								アカウント名：
+								アカウント（メールアドレス）：
 							</td>
 							<td style="width: 40%; text-align: left;">
-								<input type="text" name="name" maxlength="32">
+								<input type="text" name="mailAddress">
 							</td>
 							<td style="width: 20%; text-align: left;">
 								<p style="color: red;">＊</p>
@@ -61,7 +61,7 @@
 						<tr>
 						<td>
 							初めての方は
-							<a href="http://localhost/BulletinBoardSystem_1st/signup.html">コチラ</a>
+							<a href="signup.php">コチラ</a>
 							からどうぞ！
 						</td>
 						</tr>

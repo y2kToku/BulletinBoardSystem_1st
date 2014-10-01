@@ -7,7 +7,7 @@
 	４.各カテゴリ名称のリンク押下後、カテゴリに紐づくスレッド表示画面に遷移する
 *****************************************************************************************-->
 
-
+<?php session_start(); ?>
 
 <html>
 <head>
@@ -25,14 +25,23 @@
 				<div style="float: left; width: 30%;">
 					<!-- 戻るボタン -->
 					<input type="button" name="btnBack" value="戻る" onclick="history.back()">
+					<!--- ログアウトボタン -->
+					<input type="button" name="btnLogout" value="ログアウト" onclick="location.href='logout.php'">
 					<!-- TODO 何か画像を添付する -->
+					<img style="height: 100px; width=: 100px;" src="sample.jpg">
 				</div>
 				<div style="float: left; width: 70%;">
 					<p><h2>とくとく掲示板β ver. 0.0.1</h2></p>
+					<!-- スレッド作成 -->
+					<form id="makeCategoryForm" name="makeCategoryForm" action="makeCategory.php" method="GET">
+						カテゴリ名：<textarea name="title" cols="30" rows="5"></textarea><br />
+						<div id="baseSpace1">
+						<input type="submit" name="make" value="作成" />
+					</form>
 				</div>
 			</div>
-			<!-- カテゴリ選択フォーム -->
-			<form id="dispCategoriesForm" name="dispCategoriesForm" action="" method="GET">
+			<!-- カテゴリ表示フォーム -->
+			<!-- <form id="dispCategoriesForm" name="dispCategoriesForm" action="" method="GET"> -->
 				<div style="height: 600px;">
 					<!-- ソート順選択 -->
 					<div id="baseSpace1">
@@ -40,25 +49,65 @@
 						<a href="dispCategories.html?sort=orderOld">古い順</a>
 						<a href="dispCategories.html?sort=orderCntComment">コメント数</a>
 					</div>
-					<!-- 各カテゴリ一覧表示 -->
-					<table>
-						<tr>
-							<td style="width: 400px;">
-								●
-							</td>
-							<td style="width: 100px;">
-								コメント数：
-							</td>
-							<td style="width: 300px;">
-								最新更新日時：
-							</td>
-						</tr>
-					</table>
+					<?php
+						// サーバ接続
+						$link = mysql_connect('localhost', 'root', 'root');
+						if (!$link) {
+						    die('接続失敗です。'.mysql_error());
+						}
+						// DB選択
+						$db_selected = mysql_select_db('BulltinBoardSystem', $link);
+						if (!$db_selected){
+						    die('DB選択失敗です。'.mysql_error());
+						}
+
+						// MySQLに対する処理
+						mysql_set_charset('utf8');
+						// クエリ設定、実行
+						$sql = "SELECT * FROM categories WHERE del_flg = 0";
+						$result = mysql_query($sql);
+						if (!$result) {
+							exit('データを取得できませんでした。');
+						}
+
+						// DBから画面に表示する値を取得し、配列に入れる
+						$dispArray[] = "";
+						$cntArray = 0;
+						while ($row = mysql_fetch_assoc($result)) {
+							$dispArray[$cntArray][] = $row;
+							$cntArray ++;
+						}
+
+						// サーバ切断
+						$close_flag = mysql_close($link);
+						if ($close_flag){
+							//print('<p>切断に成功しました。</p>');
+						}
+					?>
+
+					<!-- 上記で配列に格納した値を画面用に取り出す -->
+					<?php for ($i=0; $i < count($dispArray); $i++) { ?>
+						<!-- カテゴリIDをセッションに格納 -->
+						<?php $_SESSION['categoryID'] = $dispArray[$i][0]['id']; ?>
+						<table>
+							<tr>
+								<td style="width: 400px;">
+									<a href="dispThreads.php">●<?php echo $dispArray[$i][0]['title']; ?></a>
+								</td>
+								<td style="width: 200px;">
+									コメント数：<?php echo $dispArray[$i][0]['cnt_comment']; ?>
+								</td>
+								<td style="width: 300px;">
+									最新更新日時：<?php echo $dispArray[$i][0]['updated']; ?>
+								</td>
+							</tr>
+						</table>
+					<?php } ?>
 					<!-- ページャー -->
 					<div id="baseSpace1">
 					</div>
 				</div>
-			</form>
+			<!-- </form> -->
 		</div>
 		<div id="pageFooter"></div>
 	</div>

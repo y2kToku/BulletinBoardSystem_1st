@@ -78,7 +78,6 @@
 //     // 未入力なら何もしない
 //   }
 // }
-
 ?>
 -->
 
@@ -105,7 +104,7 @@
 				</div>
 			</div>
 			<!-- ユーザ入力フォーム -->
-			<form id="loginForm" name="loginForm" action="dispCategories.php" method="POST">
+			<form id="loginForm" name="loginForm" action="signupCheck.php" method="POST">
 				<div style="height: 600px;">
 					<table>
 						<tr>
@@ -114,6 +113,28 @@
 							</td>
 							<td style="width: 40%; text-align: left;">
 								<input type="text" name="name" maxlength="32">
+							</td>
+							<td style="width: 20%; text-align: left;">
+								<p style="color: red;">＊</p>
+							</td>
+						</tr>
+						<tr>
+							<td style="width: 40%; text-align: right;">
+								アカウント名（カナ）：
+							</td>
+							<td style="width: 40%; text-align: left;">
+								<input type="text" name="nameKana" maxlength="32">
+							</td>
+							<td style="width: 20%; text-align: left;">
+								<p style="color: red;">＊</p>
+							</td>
+						</tr>
+						<tr>
+							<td style="width: 40%; text-align: right;">
+								アカウント（メールアドレス）：
+							</td>
+							<td style="width: 40%; text-align: left;">
+								<input type="text" name="mailAddress" maxlength="32">
 							</td>
 							<td style="width: 20%; text-align: left;">
 								<p style="color: red;">＊</p>
@@ -132,6 +153,17 @@
 						</tr>
 						<tr>
 							<td style="width: 40%; text-align: right;">
+								確認用パスワード：
+							</td>
+							<td style="width: 40%; text-align: left;">
+								<input type="password" name="passwordConfirm">
+							</td>
+							<td style="width: 20%; text-align: left;">
+								<p style="color: red;">＊</p>
+							</td>
+						</tr>
+						<tr>
+							<td style="width: 40%; text-align: right;">
 								Photo：
 							</td>
 							<td style="width: 40%; text-align: left;">
@@ -143,7 +175,18 @@
 								ヒント：
 							</td>
 							<td style="width: 40%; text-align: left;">
-								<input type="text" name="name" maxlength="32">
+								<input type="text" name="hint" maxlength="32">
+							</td>
+						</tr>
+						<tr>
+							<td style="width: 40%; text-align: right;">
+								管理者権限：
+							</td>
+							<td style="width: 40%; text-align: left;">
+								<input type="checkbox" name="admin_flg" value="">
+							</td>
+							<td style="width: 20%; text-align: left;">
+								<p style="color: red;">＊</p>
 							</td>
 						</tr>
 						<tr id="baseSpace1"></tr>
