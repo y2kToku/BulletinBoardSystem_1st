@@ -7,7 +7,12 @@
 	４.各カテゴリ名称のリンク押下後、カテゴリに紐づくスレッド表示画面に遷移する
 *****************************************************************************************-->
 
-<?php session_start(); ?>
+<?php
+	// ログイン画面から変数取得
+	$userID = $_POST['userID'];
+	$userName = $_POST['userName'];
+?>
+
 
 <html>
 <head>
@@ -41,7 +46,7 @@
 				</div>
 			</div>
 			<!-- カテゴリ表示フォーム -->
-			<!-- <form id="dispCategoriesForm" name="dispCategoriesForm" action="" method="GET"> -->
+			<!-- <form id="dispCategoriesForm" name="dispCategoriesForm" action="dispThreads.php" method="GET"> -->
 				<div style="height: 600px;">
 					<!-- ソート順選択 -->
 					<div id="baseSpace1">
@@ -86,26 +91,56 @@
 					?>
 
 					<!-- 上記で配列に格納した値を画面用に取り出す -->
-					<?php for ($i=0; $i < count($dispArray); $i++) { ?>
-						<!-- カテゴリIDをセッションに格納 -->
-						<?php $_SESSION['categoryID'] = $dispArray[$i][0]['id']; ?>
-						<table>
-							<tr>
-								<td style="width: 400px;">
-									<a href="dispThreads.php">●<?php echo $dispArray[$i][0]['title']; ?></a>
-								</td>
-								<td style="width: 200px;">
-									コメント数：<?php echo $dispArray[$i][0]['cnt_comment']; ?>
-								</td>
-								<td style="width: 300px;">
-									最新更新日時：<?php echo $dispArray[$i][0]['updated']; ?>
-								</td>
-							</tr>
-						</table>
+					<?php
+						for ($i=0; $i < count($dispArray); $i++) {
+							// コメント数の取得
+							// サーバ接続
+							$link = mysql_connect('localhost', 'root', 'root');
+							if (!$link) {
+							    die('接続失敗です。'.mysql_error());
+							}
+							// DB選択
+							$db_selected = mysql_select_db('BulltinBoardSystem', $link);
+							if (!$db_selected){
+							    die('DB選択失敗です。'.mysql_error());
+							}
+
+							// MySQLに対する処理
+							mysql_set_charset('utf8');
+
+							// 各カテゴリに紐づくスレッド数を取得
+							$sql_cnt = "SELECT COUNT(*) AS cnt FROM threads WHERE category_id = ".$dispArray[$i][0]['id']." AND del_flg = 0";
+							$result_cnt = mysql_query($sql_cnt);
+							$row = mysql_fetch_assoc($result_cnt);
+							$cnt = $row['cnt'];
+					?>
+
+						<!-- カテゴリ表示フォーム -->
+						<form id="dispCategoriesForm" name="dispCategoriesForm" action="dispThreads.php" method="GET">
+							<table>
+								<tr>
+									<td style="width: 400px;">
+										●<?php echo $dispArray[$i][0]['title']; ?>
+									</td>
+									<td style="width: 150px;">
+										スレッド数：<?php echo $cnt; ?>
+									</td>
+									<td style="width: 300px;">
+										最新更新日時：<?php echo $dispArray[$i][0]['updated']; ?>
+									</td>
+									<td style="width: 100px;">
+										<!-- カテゴリIDをGETパラメータで渡す -->
+										<input type="hidden" name="userID" value="<?php echo $userID; ?>">
+										<input type="hidden" name="userName" value="<?php echo $userName; ?>">
+										<input type="hidden" name="categoryID" value="<?php echo $dispArray[$i][0]['id']; ?>">
+										<input type="submit" value="スレッド表示画面へ">
+									</td>
+								</tr>
+							</table>
+						</form>
 					<?php } ?>
 					<!-- ページャー -->
-					<div id="baseSpace1">
-					</div>
+					<div id="baseSpace1" />
 				</div>
 			<!-- </form> -->
 		</div>

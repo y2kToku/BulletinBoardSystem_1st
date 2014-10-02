@@ -5,7 +5,7 @@
 	if ($title == "") {
 		exit('カテゴリ名を入力してください。');
 		// カテゴリ表示画面に遷移
-		include('dispCategories.php');
+		header('Location: dispCategories.php');
 	}
 
 	// サーバ接続
@@ -19,12 +19,19 @@
 	    die('DB選択失敗です。'.mysql_error());
 	}
 
-	// print('<p>接続に成功しました。</p>');
-
 	// MySQLに対する処理
 	mysql_set_charset('utf8');
 
-	// クエリ設定、実行
+	// タイトルの重複チェック
+	$sql_check = "SELECT COUNT(*) AS cnt FROM categories WHERE title = '$title' AND del_flg = 0;";
+	$result_check = mysql_query($sql_check);
+	$row = mysql_fetch_assoc($result_check);
+	$cnt = $row['cnt'];
+	if ($cnt > 0) {
+		exit('そのカテゴリは既に登録されています。');
+	}
+
+	// 登録
 	$sql = "INSERT INTO categories(title, creater, created, updater) VALUES('$title', 1, now(), 1)";
 	$result = mysql_query($sql);
 	if (!$result) {

@@ -7,8 +7,19 @@
 	４.スレッドの削除は、管理者しかできない
 *****************************************************************************************-->
 <?php
-	// セッション読み込み
-	session_start();
+	// カテゴリ表示画面から変数取得
+	$userID = $_GET['userID'];
+	$userName = $_GET['userName'];
+	$categoryID = $_GET['categoryID'];
+	// TODO
+	// 遷移元画面がスレッド作成の場合、画面リフレッシュ
+// 	if (stristr($_SERVER["HTTP_REFERER"], 'makeThread.php')) {
+// 		echo <<<EOM
+// <script type="text/javascript">
+//   window.location.reload();
+// </script>
+// EOM;
+// 	}
 ?>
 
 <html>
@@ -36,81 +47,99 @@
 					<p><h2>とくとく掲示板β ver. 0.0.1</h2></p>
 					<!-- スレッド作成 -->
 					<form id="makeThreadForm" name="makeThreadForm" action="makeThread.php" method="GET">
-						名前：<input type="text" name="name" size="30" value="" /><br />
+						<!-- 名前：<input type="text" name="name" size="30" value="<?php echo $userName; ?>" /><br /> -->
 						コメント：<textarea name="content" cols="30" rows="5"></textarea><br />
 						<div id="baseSpace1">
+						<input type="hidden" name="userID" value="<?php echo $userID; ?>" />
+						<input type="hidden" name="userName" value="<?php echo $userName; ?>" />
+						<input type="hidden" name="categoryID" value="<?php echo $categoryID; ?>" />
 						<input type="submit" name="make" value="作成" />
 					</form>
 				</div>
 			</div>
-			<!-- スレッド選択フォーム -->
-			<!-- <form id="dispThreadsForm" name="dispThreadsForm" action="" method="GET"> -->
-				<div style="height: 600px;">
-					<!-- 各スレッド一覧表示 -->
-					<?php
-						// サーバ接続
-						$link = mysql_connect('localhost', 'root', 'root');
-						if (!$link) {
-						    die('接続失敗です。'.mysql_error());
+
+			<div style="height: 600px;">
+				<!-- 各スレッド一覧表示 -->
+				<?php
+					// サーバ接続
+					$link = mysql_connect('localhost', 'root', 'root');
+					if (!$link) {
+					    die('接続失敗です。'.mysql_error());
+					}
+					// DB選択
+					$db_selected = mysql_select_db('BulltinBoardSystem', $link);
+					if (!$db_selected){
+					    die('DB選択失敗です。'.mysql_error());
+					}
+
+					// MySQLに対する処理
+					mysql_set_charset('utf8');
+
+					// 選択したカテゴリに紐づくスレッドが存在しない場合
+					$sql_check = "SELECT COUNT(*) AS cnt FROM threads WHERE category_id = '$categoryID' AND del_flg = 0";
+					// echo $sql_check;
+					$result_check = mysql_query($sql_check);
+					$row = mysql_fetch_assoc($result_check);
+					$cnt = $row['cnt'];
+					// echo $cnt;
+					if ($cnt != 0) {
+						// 選択したカテゴリに紐づくスレッドが存在する場合
+						$sql = "SELECT * FROM threads WHERE category_id = '$categoryID' AND del_flg = 0";
+						$result = mysql_query($sql);
+
+						if (!$result) {
+							exit('データを取得できませんでした。');
 						}
-						// DB選択
-						$db_selected = mysql_select_db('BulltinBoardSystem', $link);
-						if (!$db_selected){
-						    die('DB選択失敗です。'.mysql_error());
+						// DBから画面に表示する値を取得し、配列に入れる
+						$dispArray[] = "";
+						$cntArray = 0;
+						while ($row = mysql_fetch_assoc($result)) {
+							$dispArray[$cntArray][] = $row;
+							$cntArray ++;
 						}
+						// サーバ切断
+						$close_flag = mysql_close($link);
+						if ($close_flag){
+							//print('<p>切断に成功しました。</p>');
+						}
+					}
+				?>
+				<!-- 上記で配列に格納した値を画面用に取り出す -->
+				<?php for ($i=0; $i < count($dispArray); $i++) { ?>
+				<!-- GETで取得し、編集・削除画面に遷移させる -->
+					<table>
+						<tr id="dispThreadsDiv">
+							<td>通番：<?php echo $dispArray[$i][0]['id']; ?>
+								作成者名：<?php echo $dispArray[$i][0]['creater']; ?>
+								更新日時：<?php echo $dispArray[$i][0]['updated']; ?>
+							</td>
+							<td>
+								<!-- 写真 -->
+								内容：<?php echo $dispArray[$i][0]['content']; ?>
+							</td>
+							<td>
+								<form id="dispThreadsForm" name="dispThreadsForm" action="editThread.php" method="GET">
+									<input type="hidden" name="threadID" value="<?php echo $dispArray[$i][0]['id']; ?>">
+									<input type="hidden" name="categoryID" value="<?php echo $categoryID; ?>">
+									<input type="hidden" name="creater" value="<?php echo $dispArray[$i][0]['creater']; ?>">
+									<input type="hidden" name="created" value="<?php echo $dispArray[$i][0]['created']; ?>">
+									<input type="hidden" name="content" value="<?php echo $dispArray[$i][0]['content']; ?>">
+									<input type="submit" value="修正">
+								</form>
+								<form id="dispThreadsForm" name="dispThreadsForm" action="deleteThread.php" method="GET">
+									<input type="hidden" name="threadID" value="<?php echo $dispArray[$i][0]['id']; ?>">
+									<input type="hidden" name="categoryID" value="<?php echo $categoryID; ?>">
+									<input type="submit" value="削除">
+								</form>
+							</td>
+						</tr>
+					</table>
+				<?php } ?>
 
-						// MySQLに対する処理
-						mysql_set_charset('utf8');
-						print_r($_SESSION['categoryID']);
-						// クエリ設定、実行
-						// $sql = "SELECT * FROM threads WHERE category_id = '$_SESSION['categoryID']' AND del_flg = 0";
-						// echo $sql;
-						// $result = mysql_query($sql);
-						// if (!$result) {
-						// 	exit('データを取得できませんでした。');
-						// }
-
-						// // DBから画面に表示する値を取得し、配列に入れる
-						// $dispArray[] = "";
-						// $cntArray = 0;
-						// while ($row = mysql_fetch_assoc($result)) {
-						// 	$dispArray[$cntArray][] = $row;
-						// 	$cntArray ++;
-						// }
-						// print_r($dispArray);
-
-						// // サーバ切断
-						// $close_flag = mysql_close($link);
-						// if ($close_flag){
-						// 	//print('<p>切断に成功しました。</p>');
-						// }
-					?>
-
-					<!-- 上記で配列に格納した値を画面用に取り出す -->
-					<?php for ($i=0; $i < count($dispArray); $i++) { ?>
-						<table>
-							<tr>
-								<td>通番：<?php echo $dispArray[$i][0]['id']; ?>
-									作成者名：<?php echo $dispArray[$i][0]['creater']; ?>
-									作成日時：<?php echo $dispArray[$i][0]['created']; ?>
-								</td>
-								<td>
-									<!-- 写真 -->
-									内容：<?php echo $dispArray[$i][0]['content']; ?>
-								</td>
-								<td id="baseSpace1">
-									<input type="button" name="btn_edit" value="修正" onclick="location.href='editThread.php'">
-									<input type="button" name="dlt" value="削除" onclick="location.href='deleteThread.php'">
-								</td>
-							</tr>
-						</table>
-					<?php } ?>
-
-					<!-- ページャー -->
-					<div id="baseSpace1">
-					</div>
+				<!-- ページャー -->
+				<div id="baseSpace1">
 				</div>
-			<!-- </form> -->
+			</div>
 		</div>
 		<div id="pageFooter"></div>
 	</div>
