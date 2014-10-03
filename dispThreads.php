@@ -36,6 +36,8 @@
 			<!-- ロゴ＆説明 -->
 			<div style="height: 240px;">
 				<div style="float: left; width: 30%;">
+					<!-- カテゴリ選択画面へ -->
+					<a href="dispCategories.php">カテゴリ表示画面へ</a>
 					<!-- 戻るボタン -->
 					<input type="button" name="btnBack" value="戻る" onclick="history.back()">
 					<!--- ログアウトボタン -->
@@ -47,7 +49,6 @@
 					<p><h2>とくとく掲示板β ver. 0.0.1</h2></p>
 					<!-- スレッド作成 -->
 					<form id="makeThreadForm" name="makeThreadForm" action="makeThread.php" method="GET">
-						<!-- 名前：<input type="text" name="name" size="30" value="<?php echo $userName; ?>" /><br /> -->
 						コメント：<textarea name="content" cols="30" rows="5"></textarea><br />
 						<div id="baseSpace1">
 						<input type="hidden" name="userID" value="<?php echo $userID; ?>" />
@@ -81,7 +82,6 @@
 					$result_check = mysql_query($sql_check);
 					$row = mysql_fetch_assoc($result_check);
 					$cnt = $row['cnt'];
-					// echo $cnt;
 					if ($cnt != 0) {
 						// 選択したカテゴリに紐づくスレッドが存在する場合
 						$sql = "SELECT * FROM threads WHERE category_id = '$categoryID' AND del_flg = 0";

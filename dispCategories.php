@@ -8,18 +8,17 @@
 *****************************************************************************************-->
 
 <?php
+	header("Location: " . $_SERVER['PHP_SELF']);
 	// ログイン画面から変数取得
 	$userID = $_POST['userID'];
 	$userName = $_POST['userName'];
 ?>
 
-
 <html>
 <head>
 	<meta charset="utf-8">
-	<!-- TODO CSS読み込み -->
-	<link rel="stylesheet" type="text/css" href="basic.css" />
 	<title>カテゴリ表示</title>
+	<link rel="stylesheet" type="text/css" href="basic.css" />
 </head>
 <body>
 	<div id="wrapper" style="width: 1440px; height: 900px; background-color: #F0FFFF;">
@@ -50,9 +49,11 @@
 				<div style="height: 600px;">
 					<!-- ソート順選択 -->
 					<div id="baseSpace1">
-						<a href="dispCategories.html?sort=orderNew">新しい順</a>
-						<a href="dispCategories.html?sort=orderOld">古い順</a>
-						<a href="dispCategories.html?sort=orderCntComment">コメント数</a>
+						<form id="sortCategoriesForm" name="sortCategoriesForm" action="" method="GET">
+							<a href="dispCategories.php?sort=updated&order=DESC">新しい順</a>
+							<a href="dispCategories.php?sort=updated&order=ASC">古い順</a>
+							<a href="dispCategories.php?sort=cnt_comment&order=DESC">コメント数</a>
+						</form>
 					</div>
 					<?php
 						// サーバ接続
@@ -68,8 +69,15 @@
 
 						// MySQLに対する処理
 						mysql_set_charset('utf8');
-						// クエリ設定、実行
+						// カテゴリを取得
 						$sql = "SELECT * FROM categories WHERE del_flg = 0";
+						// ソート条件を追加
+						if (isset($_GET['sort']) && isset($_GET['order'])) {
+							$sort = $_GET['sort'];
+							$order = $_GET['order'];
+							$sql = $sql." ORDER BY ".$sort." ".$order.";";
+						}
+
 						$result = mysql_query($sql);
 						if (!$result) {
 							exit('データを取得できませんでした。');
@@ -108,11 +116,21 @@
 							// MySQLに対する処理
 							mysql_set_charset('utf8');
 
-							// 各カテゴリに紐づくスレッド数を取得
-							$sql_cnt = "SELECT COUNT(*) AS cnt FROM threads WHERE category_id = ".$dispArray[$i][0]['id']." AND del_flg = 0";
-							$result_cnt = mysql_query($sql_cnt);
-							$row = mysql_fetch_assoc($result_cnt);
-							$cnt = $row['cnt'];
+							// // 各カテゴリに紐づくスレッド数を取得
+							// $sql_cnt = "SELECT COUNT(*) AS cnt FROM threads WHERE category_id = ".$dispArray[$i][0]['id']." AND del_flg = 0";
+							// $result_cnt = mysql_query($sql_cnt);
+							// $row = mysql_fetch_assoc($result_cnt);
+							// $cnt = $row['cnt'];
+
+							// 各カテゴリに紐づくスレッドの最新更新日時を取得
+							$sql_latest_updated = "SELECT updated AS latestUpdated FROM threads WHERE category_id = ".$dispArray[$i][0]['id']." AND del_flg = 0 ORDER BY updated DESC LIMIT 1";
+							$result_latest_updated = mysql_query($sql_latest_updated);
+							if (!$result_latest_updated) {
+								exit('データを取得できませんでした。');
+							}
+							$row = mysql_fetch_assoc($result_latest_updated);
+							$latestUpdated = $row['latestUpdated'];
+
 					?>
 
 						<!-- カテゴリ表示フォーム -->
@@ -123,10 +141,10 @@
 										●<?php echo $dispArray[$i][0]['title']; ?>
 									</td>
 									<td style="width: 150px;">
-										スレッド数：<?php echo $cnt; ?>
+										スレッド数：<?php echo $dispArray[$i][0]['cnt_comment']; ?>
 									</td>
 									<td style="width: 300px;">
-										最新更新日時：<?php echo $dispArray[$i][0]['updated']; ?>
+										最新更新日時：<?php echo $latestUpdated; ?>
 									</td>
 									<td style="width: 100px;">
 										<!-- カテゴリIDをGETパラメータで渡す -->

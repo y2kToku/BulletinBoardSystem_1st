@@ -22,13 +22,31 @@
 		$name = $_GET['name'];
 		$content = $_GET['content'];
 		$userID = $_GET['userID'];
+		$userName = $_GET['userName'];
 		$categoryID = $_GET['categoryID'];
 
-		// クエリ設定、実行
-		$sql = "INSERT INTO threads(category_id, content, creater, created, updater) VALUES($categoryID ,'$content', '$userID', now(), 'userID')";
+		// スレッド新規作成
+		$sql = "INSERT INTO threads(category_id, content, creater, created, updater) VALUES($categoryID ,'$content', '$userID', now(), '$userID')";
 		$result = mysql_query($sql);
 		if (!$result) {
 			exit('データを登録できませんでした。');
+		}
+
+		// スレッド作成成功時、スレッドが紐づくカテゴリのスレッド数を取得
+		$sql_chk_category = "SELECT cnt_comment FROM categories WHERE id = '$categoryID' AND del_flg = 0";
+		$result_chk_category = mysql_query($sql_chk_category);
+		if (!$result_chk_category) {
+			exit('カテゴリ情報を取得できませんでした。');
+		}
+		$row = mysql_fetch_assoc($result_chk_category);
+		$cnt_comment = $row['cnt_comment'];
+		$cnt_comment ++;
+
+		// スレッド作成成功時、スレッドが紐づくカテゴリを更新
+		$sql_upd_category = "UPDATE categories SET cnt_comment = '$cnt_comment', updater = '$userID' WHERE id = '$categoryID'";
+		$result_upd_category = mysql_query($sql_upd_category);
+		if (!$result_upd_category) {
+			exit('カテゴリを更新できませんでした。');
 		}
 
 		// サーバ切断
@@ -37,6 +55,6 @@
 		    // print('<p>切断に成功しました。</p>');
 		}
 	?>
-<p>登録が完了しました。<br /><a href="dispThreads.php?categoryID=<?php echo $categoryID; ?>">戻る</a></p>
+<p>登録が完了しました。<br /><a href="dispThreads.php?userID=<?php echo $userID; ?>&userName=<?php echo $userName; ?>&categoryID=<?php echo $categoryID; ?>">戻る</a></p>
 </body>
 </html>
