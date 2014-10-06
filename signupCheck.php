@@ -7,7 +7,12 @@
 	４.アカウント情報をセッション変数へ格納
 	５.サインアップ終了後、カテゴリ選択画面に遷移させる
 *****************************************************************************************-->
-
+<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+</head>
+<body>
 <?php
 	// サインアップ画面から変数を取得
 	$name = $_POST['name'];
@@ -65,18 +70,20 @@
 			if (!$result_signup) {
 				exit('サインアップできません。<br />お手数ですが、もう一度サインアップを行ってください。<br />');
 			} else {
-				// サインアップ処理成功時、セッションにアカウント情報を格納し、カテゴリ表示画面に遷移する
-				session_start();
-				$_SESSION['login'] = "OK";
-				$_SESSION['name'] = $name;
-				$_SESSION['nameKana'] = $name_kana;
-				$_SESSION['mailAddress'] = $mailAddress;
-				$_SESSION['password'] = $password;
-				$_SESSION['admin_flg'] = $admin_flg;
-
-				// カテゴリ表示画面に遷移
-				include('dispCategories.php');
+				echo "###";
+?>
+				<form name="signupCheckForm" action="dispCategories.php" method="POST">
+					<input type="hidden" name="name" value="$name">
+					<input type="hidden" name="nameKana" value="$nameKana">
+					<input type="hidden" name="mailAddress" value="$mailAddress">
+					<input type="hidden" name="password" value="$password">
+					<input type="hidden" name="admin_flg" value="$admin_flg">
+					<input type="submit" name="field1" value="カテゴリ表示画面へ">
+				</form>
+<?php
 			}
 		}
 	}
 ?>
+</body>
+</html>

@@ -8,10 +8,19 @@
 *****************************************************************************************-->
 
 <?php
-	header("Location: " . $_SERVER['PHP_SELF']);
+	// TODO 修正反映の為、自画面をリロードする 効いてない・・・
+	// header("Location: " . $_SERVER['PHP_SELF']);
 	// ログイン画面から変数取得
 	$userID = $_POST['userID'];
 	$userName = $_POST['userName'];
+	// ページャ設定用変数
+	$dispLimit = 10;
+	if (isset($_GET['page'])) {
+		$dispPage = $_GET['page'];
+	} else {
+		$dispPage = 1;
+	}
+	$offset = "";
 ?>
 
 <html>
@@ -45,14 +54,13 @@
 				</div>
 			</div>
 			<!-- カテゴリ表示フォーム -->
-			<!-- <form id="dispCategoriesForm" name="dispCategoriesForm" action="dispThreads.php" method="GET"> -->
 				<div style="height: 600px;">
 					<!-- ソート順選択 -->
 					<div id="baseSpace1">
 						<form id="sortCategoriesForm" name="sortCategoriesForm" action="" method="GET">
-							<a href="dispCategories.php?sort=updated&order=DESC">新しい順</a>
-							<a href="dispCategories.php?sort=updated&order=ASC">古い順</a>
-							<a href="dispCategories.php?sort=cnt_comment&order=DESC">コメント数</a>
+							<a href="?page=<?php echo $dispPage; ?>&sort=updated&order=DESC">新しい順</a>
+							<a href="?page=<?php echo $dispPage; ?>&sort=updated&order=ASC">古い順</a>
+							<a href="?page=<?php echo $dispPage; ?>&sort=cnt_comment&order=DESC">コメント数</a>
 						</form>
 					</div>
 					<?php
@@ -69,20 +77,38 @@
 
 						// MySQLに対する処理
 						mysql_set_charset('utf8');
+						// カテゴリ全件取得用
+						$sql_all = "";
+						// カテゴリ画面表示用
+						$sql = "";
 						// カテゴリを取得
-						$sql = "SELECT * FROM categories WHERE del_flg = 0";
+						$sql_all = "SELECT * FROM categories WHERE del_flg = 0";
+						$sql = $sql_all;
 						// ソート条件を追加
 						if (isset($_GET['sort']) && isset($_GET['order'])) {
 							$sort = $_GET['sort'];
 							$order = $_GET['order'];
-							$sql = $sql." ORDER BY ".$sort." ".$order.";";
+							$sql = $sql." ORDER BY ".$sort." ".$order;
 						}
-
+						// ページャ条件を追加
+						if (isset($dispLimit)) {
+							$offset = $dispLimit * ($dispPage - 1);
+							$sql = $sql." LIMIT ".$dispLimit." OFFSET ".$offset;
+						}
+						$result_all = mysql_query($sql_all);
 						$result = mysql_query($sql);
-						if (!$result) {
+						if (!$result_all || !$result) {
 							exit('データを取得できませんでした。');
 						}
 
+						// DBからカテゴリ全件を取得し、配列に入れる
+						$allArray[] = "";
+						while ($row = mysql_fetch_assoc($result_all)) {
+							$allArray[$cntArray][] = $row;
+							$cntArray ++;
+						}
+						// 表示上限ページ数
+						$max_page = ceil(count($allArray) / $dispLimit);
 						// DBから画面に表示する値を取得し、配列に入れる
 						$dispArray[] = "";
 						$cntArray = 0;
@@ -93,15 +119,22 @@
 
 						// サーバ切断
 						$close_flag = mysql_close($link);
-						if ($close_flag){
-							//print('<p>切断に成功しました。</p>');
+						if (!$close_flag){
+							exit('サーバを切断できませんでした。');
 						}
 					?>
 
 					<!-- 上記で配列に格納した値を画面用に取り出す -->
 					<?php
-						for ($i=0; $i < count($dispArray); $i++) {
-							// コメント数の取得
+						// ページャ
+						// カテゴリ登録件数が０件の場合
+						if(count($allArray) == 0){
+							exit('現在、登録されているカテゴリはありません。');
+						}
+						if (count($dispArray) < $dispLimit) {
+							$dispLimit = count($dispArray);
+						}
+						for ($i=0; $i < $dispLimit; $i++) {
 							// サーバ接続
 							$link = mysql_connect('localhost', 'root', 'root');
 							if (!$link) {
@@ -116,51 +149,51 @@
 							// MySQLに対する処理
 							mysql_set_charset('utf8');
 
-							// // 各カテゴリに紐づくスレッド数を取得
-							// $sql_cnt = "SELECT COUNT(*) AS cnt FROM threads WHERE category_id = ".$dispArray[$i][0]['id']." AND del_flg = 0";
-							// $result_cnt = mysql_query($sql_cnt);
-							// $row = mysql_fetch_assoc($result_cnt);
-							// $cnt = $row['cnt'];
-
 							// 各カテゴリに紐づくスレッドの最新更新日時を取得
-							$sql_latest_updated = "SELECT updated AS latestUpdated FROM threads WHERE category_id = ".$dispArray[$i][0]['id']." AND del_flg = 0 ORDER BY updated DESC LIMIT 1";
-							$result_latest_updated = mysql_query($sql_latest_updated);
-							if (!$result_latest_updated) {
-								exit('データを取得できませんでした。');
+							if ($dispArray[$i][0]['cnt_comment'] > 0) {
+								$sql_latest_updated = "SELECT updated AS latestUpdated FROM threads WHERE category_id = ".$dispArray[$i][0]['id']." AND del_flg = 0 ORDER BY updated DESC LIMIT 1";
+								$result_latest_updated = mysql_query($sql_latest_updated);
+								if (!$result_latest_updated) {
+									exit('データを取得できませんでした。');
+								}
+								$row = mysql_fetch_assoc($result_latest_updated);
+								$latestUpdated = $row['latestUpdated'];
+							} else {
+								$latestUpdated = $dispArray[$i][0]['updated'];
 							}
-							$row = mysql_fetch_assoc($result_latest_updated);
-							$latestUpdated = $row['latestUpdated'];
-
 					?>
-
-						<!-- カテゴリ表示フォーム -->
-						<form id="dispCategoriesForm" name="dispCategoriesForm" action="dispThreads.php" method="GET">
-							<table>
-								<tr>
-									<td style="width: 400px;">
-										●<?php echo $dispArray[$i][0]['title']; ?>
-									</td>
-									<td style="width: 150px;">
-										スレッド数：<?php echo $dispArray[$i][0]['cnt_comment']; ?>
-									</td>
-									<td style="width: 300px;">
-										最新更新日時：<?php echo $latestUpdated; ?>
-									</td>
-									<td style="width: 100px;">
-										<!-- カテゴリIDをGETパラメータで渡す -->
-										<input type="hidden" name="userID" value="<?php echo $userID; ?>">
-										<input type="hidden" name="userName" value="<?php echo $userName; ?>">
-										<input type="hidden" name="categoryID" value="<?php echo $dispArray[$i][0]['id']; ?>">
-										<input type="submit" value="スレッド表示画面へ">
-									</td>
-								</tr>
-							</table>
-						</form>
-					<?php } ?>
-					<!-- ページャー -->
-					<div id="baseSpace1" />
+							<!-- カテゴリ表示フォーム -->
+							<form id="dispCategoriesForm" name="dispCategoriesForm" action="dispThreads.php" method="GET">
+								<table>
+									<tr>
+										<td style="width: 400px;">
+											●<?php echo $dispArray[$i][0]['title']; ?>
+										</td>
+										<td style="width: 150px;">
+											スレッド数：<?php echo $dispArray[$i][0]['cnt_comment']; ?>
+										</td>
+										<td style="width: 300px;">
+											最新更新日時：<?php echo $latestUpdated; ?>
+										</td>
+										<td style="width: 100px;">
+											<!-- カテゴリIDをGETパラメータで渡す -->
+											<input type="hidden" name="userID" value="<?php echo $userID; ?>">
+											<input type="hidden" name="userName" value="<?php echo $userName; ?>">
+											<input type="hidden" name="categoryID" value="<?php echo $dispArray[$i][0]['id']; ?>">
+											<input type="submit" value="スレッド表示画面へ">
+										</td>
+									</tr>
+								</table>
+							</form>
+						<?php } ?>
+							<!-- ページャ表示 -->
+							<div id="baseSpace1" style="text-align: center;">
+							<?php for ($i = 1; $i <= $max_page; $i++){ ?>
+								<a href="?page=<?php echo $i; ?>"><?php echo $i; ?></a>
+							<?php } ?>
+							</div>
+					</div>
 				</div>
-			<!-- </form> -->
 		</div>
 		<div id="pageFooter"></div>
 	</div>

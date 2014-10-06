@@ -28,8 +28,8 @@
 			</div>
 			<!-- ログアウト表示 -->
 			<?php
-				$_SESSION = array() ; すべてのセッション変数を初期化
-				session_destroy() ; セッションを破棄
+				// $_SESSION = array() ; すべてのセッション変数を初期化
+				// session_destroy() ; セッションを破棄
 			?>
 			<p><h2>ログアウトしました。</h2></p>
 			<div id="baseSpace1" />
