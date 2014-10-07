@@ -55,116 +55,116 @@ $offset = "";
                                 <input type="hidden" name="userName" value="<?php echo $userName; ?>" />
                                 <input type="hidden" name="categoryID" value="<?php echo $categoryID; ?>" />
                                 <input type="submit" name="make" value="作成" />
+                            </div>
                         </form>
                     </div>
-                </div>
 
-                <div style="height: 600px;">
-                    <!-- 各スレッド一覧表示 -->
-                    <?php
-                    // サーバ接続
-                    $link = mysql_connect('localhost', 'root', 'root');
-                    if (!$link) {
-                        die('接続失敗です。' . mysql_error());
-                    }
-                    // DB選択
-                    $db_selected = mysql_select_db('BulltinBoardSystem', $link);
-                    if (!$db_selected) {
-                        die('DB選択失敗です。' . mysql_error());
-                    }
-
-                    // MySQLに対する処理
-                    mysql_set_charset('utf8');
-
-                    // 選択したカテゴリに紐づくスレッドが存在しない場合
-                    $sql_check = "SELECT COUNT(*) AS cnt FROM threads WHERE category_id = '$categoryID' AND del_flg = 0";
-                    // echo $sql_check;
-                    $result_check = mysql_query($sql_check);
-                    $row = mysql_fetch_assoc($result_check);
-                    $cnt = $row['cnt'];
-                    if ($cnt != 0) {
-                        // 選択したカテゴリに紐づくスレッドが存在する場合
-                        // スレッド全件取得用
-                        $sql_all = "SELECT * FROM threads WHERE category_id = '$categoryID' AND del_flg = 0";
-                        // スレッド画面表示用
-                        $sql = $sql_all;
-                        // ページャ条件を追加
-                        if (isset($dispLimit)) {
-                            $offset = $dispLimit * ($dispPage - 1);
-                            $sql = $sql . " LIMIT " . $dispLimit . " OFFSET " . $offset;
+                    <div style="height: 600px;">
+                        <!-- 各スレッド一覧表示 -->
+                        <?php
+                        // サーバ接続
+                        $link = mysql_connect('localhost', 'root', 'root');
+                        if (!$link) {
+                            die('接続失敗です。' . mysql_error());
                         }
-                        $result_all = mysql_query($sql_all);
-                        $result = mysql_query($sql);
-
-                        if (!$result_all || !$result) {
-                            echo 'データを取得できませんでした。';
-                            return;
+                        // DB選択
+                        $db_selected = mysql_select_db('BulltinBoardSystem', $link);
+                        if (!$db_selected) {
+                            die('DB選択失敗です。' . mysql_error());
                         }
 
-                        // DBからカテゴリ全件を取得し、配列に入れる
-                        $allArray[] = "";
-                        while ($row = mysql_fetch_assoc($result_all)) {
-                            $allArray[$cntArray][] = $row;
-                            $cntArray ++;
-                        }
-                        // 表示上限ページ数
-                        $max_page = ceil(count($allArray) / $dispLimit);
-                        // DBから画面に表示する値を取得し、配列に入れる
-                        $dispArray[] = "";
-                        $cntArray = 0;
-                        while ($row = mysql_fetch_assoc($result)) {
-                            $dispArray[$cntArray][] = $row;
-                            $cntArray ++;
-                        }
+                        // MySQLに対する処理
+                        mysql_set_charset('utf8');
 
-                        // サーバ切断
-                        $close_flag = mysql_close($link);
-                        if (!$close_flag) {
-                            echo 'サーバ切断できませんでした。';
-                            return;
-                        }
-                    }
-                    ?>
-                    <!-- 上記で配列に格納した値を画面用に取り出す -->
-                    <?php for ($i = 0; $i < count($dispArray); $i++) { ?>
-                        <!-- GETで取得し、編集・削除画面に遷移させる -->
-                        <table>
-                            <tr id="dispThreadsDiv">
-                                <td>通番：<?php echo $dispArray[$i][0]['id']; ?>
-                                    作成者名：<?php echo $dispArray[$i][0]['creater']; ?>
-                                    更新日時：<?php echo $dispArray[$i][0]['updated']; ?>
-                                </td>
-                                <td>
-                                    内容：<?php echo $dispArray[$i][0]['content']; ?>
-                                </td>
-                                <td>
-                                    <form id="dispThreadsForm" name="dispThreadsForm" action="./editThread.php" method="GET">
-                                        <input type="hidden" name="threadID" value="<?php echo $dispArray[$i][0]['id']; ?>">
-                                        <input type="hidden" name="categoryID" value="<?php echo $categoryID; ?>">
-                                        <input type="hidden" name="creater" value="<?php echo $dispArray[$i][0]['creater']; ?>">
-                                        <input type="hidden" name="created" value="<?php echo $dispArray[$i][0]['created']; ?>">
-                                        <input type="hidden" name="content" value="<?php echo $dispArray[$i][0]['content']; ?>">
-                                        <input type="submit" value="修正">
-                                    </form>
-                                    <form id="dispThreadsForm" name="dispThreadsForm" action="../controller/deleteThread.php" method="GET">
-                                        <input type="hidden" name="threadID" value="<?php echo $dispArray[$i][0]['id']; ?>">
-                                        <input type="hidden" name="categoryID" value="<?php echo $categoryID; ?>">
-                                        <input type="submit" value="削除">
-                                    </form>
-                                </td>
-                            </tr>
-                        </table>
-                    <?php } ?>
+                        // 選択したカテゴリに紐づくスレッドが存在しない場合
+                        $sql_check = "SELECT COUNT(*) AS cnt FROM threads WHERE category_id = '$categoryID' AND del_flg = 0";
+                        // echo $sql_check;
+                        $result_check = mysql_query($sql_check);
+                        $row = mysql_fetch_assoc($result_check);
+                        $cnt = $row['cnt'];
+                        if ($cnt != 0) {
+                            // 選択したカテゴリに紐づくスレッドが存在する場合
+                            // スレッド全件取得用
+                            $sql_all = "SELECT * FROM threads WHERE category_id = '$categoryID' AND del_flg = 0";
+                            // スレッド画面表示用
+                            $sql = $sql_all;
+                            // ページャ条件を追加
+                            if (isset($dispLimit)) {
+                                $offset = $dispLimit * ($dispPage - 1);
+                                $sql = $sql . " LIMIT " . $dispLimit . " OFFSET " . $offset;
+                            }
+                            $result_all = mysql_query($sql_all);
+                            $result = mysql_query($sql);
 
-                    <!-- ページャー -->
-                    <div id="baseSpace1" style="text-align: center;">
-                        <?php for ($i = 1; $i <= $max_page; $i++) { ?>
-                            <a href="?userID=<?php echo $userID; ?>&userName=<?php echo $userName; ?>&categoryID=<?php echo $categoryID; ?>&page=<?php echo $i; ?>"><?php echo $i; ?></a>
+                            if (!$result_all || !$result) {
+                                echo 'データを取得できませんでした。';
+                                return;
+                            }
+
+                            // DBからカテゴリ全件を取得し、配列に入れる
+                            $allArray[] = "";
+                            while ($row = mysql_fetch_assoc($result_all)) {
+                                $allArray[$cntArray][] = $row;
+                                $cntArray ++;
+                            }
+                            // 表示上限ページ数
+                            $max_page = ceil(count($allArray) / $dispLimit);
+                            // DBから画面に表示する値を取得し、配列に入れる
+                            $dispArray[] = "";
+                            $cntArray = 0;
+                            while ($row = mysql_fetch_assoc($result)) {
+                                $dispArray[$cntArray][] = $row;
+                                $cntArray ++;
+                            }
+
+                            // サーバ切断
+                            $close_flag = mysql_close($link);
+                            if (!$close_flag) {
+                                echo 'サーバ切断できませんでした。';
+                                return;
+                            }
+                        }
+                        ?>
+                        <!-- 上記で配列に格納した値を画面用に取り出す -->
+                        <?php for ($i = 0; $i < count($dispArray); $i++) { ?>
+                            <!-- GETで取得し、編集・削除画面に遷移させる -->
+                            <table>
+                                <tr id="dispThreadsDiv">
+                                    <td>通番：<?php echo $dispArray[$i][0]['id']; ?>
+                                        作成者名：<?php echo $dispArray[$i][0]['creater']; ?>
+                                        更新日時：<?php echo $dispArray[$i][0]['updated']; ?>
+                                    </td>
+                                    <td>
+                                        内容：<?php echo $dispArray[$i][0]['content']; ?>
+                                    </td>
+                                    <td>
+                                        <form id="dispThreadsForm" name="dispThreadsForm" action="./editThread.php" method="GET">
+                                            <input type="hidden" name="threadID" value="<?php echo $dispArray[$i][0]['id']; ?>">
+                                            <input type="hidden" name="categoryID" value="<?php echo $categoryID; ?>">
+                                            <input type="hidden" name="creater" value="<?php echo $dispArray[$i][0]['creater']; ?>">
+                                            <input type="hidden" name="created" value="<?php echo $dispArray[$i][0]['created']; ?>">
+                                            <input type="hidden" name="content" value="<?php echo $dispArray[$i][0]['content']; ?>">
+                                            <input type="submit" value="修正">
+                                        </form>
+                                        <form id="dispThreadsForm" name="dispThreadsForm" action="../controller/deleteThread.php" method="GET">
+                                            <input type="hidden" name="threadID" value="<?php echo $dispArray[$i][0]['id']; ?>">
+                                            <input type="hidden" name="categoryID" value="<?php echo $categoryID; ?>">
+                                            <input type="submit" value="削除">
+                                        </form>
+                                    </td>
+                                </tr>
+                            </table>
                         <?php } ?>
+
+                        <!-- ページャー -->
+                        <div id="baseSpace1" style="text-align: center;">
+                            <?php for ($i = 1; $i <= $max_page; $i++) { ?>
+                                <a href="?userID=<?php echo $userID; ?>&userName=<?php echo $userName; ?>&categoryID=<?php echo $categoryID; ?>&page=<?php echo $i; ?>"><?php echo $i; ?></a>
+                            <?php } ?>
+                        </div>
                     </div>
                 </div>
+                <div id="pageFooter"></div>
             </div>
-            <div id="pageFooter"></div>
-        </div>
     </body>
 </html>
