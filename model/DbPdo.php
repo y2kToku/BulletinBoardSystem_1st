@@ -40,7 +40,6 @@ Class DbPdo extends PDO {
             // DB関連の処理失敗時は例外を投げるように設定
             self::$db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         }
-
         return self::$db;
     }
 
@@ -49,21 +48,18 @@ Class DbPdo extends PDO {
         try {
             // DB接続
             $pdo = self::connect();
-            // トランザクション(autoCommit対策)
-//            $pdo->beginTransaction();
             // クエリ読込
             $stmt = $pdo->prepare($sql);
             // クエリ実行
-            foreach ($stmt->fetch($sql) as $result) {
-                // クエリ実行結果を返却
-                return $result;
+            $stmt->execute();
+            // 実行結果取得
+            foreach ($stmt as $row) {
+                return $row;
             }
         } catch (PDOException $e) {
             // データベース接続失敗
             exit('データベース接続失敗。' . $e->getMessage());
         }
-        // PDO切断
-        $Pdo = null;
     }
 
     // カウント取得用
@@ -72,8 +68,6 @@ Class DbPdo extends PDO {
         try {
             // DB接続
             $pdo = self::connect();
-            // トランザクション(autoCommit対策)
-//            $pdo->beginTransaction();
             // クエリ読込
             $stmt = $pdo->prepare($sql);
             // クエリ実行
@@ -83,8 +77,6 @@ Class DbPdo extends PDO {
             // データベース接続失敗
             exit('データベース接続失敗。' . $e->getMessage());
         }
-        // PDO切断
-        $Pdo = null;
     }
 
     // INSERT,UPDATE,DELETE用
@@ -92,8 +84,6 @@ Class DbPdo extends PDO {
         try {
             // DB接続
             $pdo = self::connect();
-            // トランザクション(autoCommit対策)
-//            $pdo->beginTransaction();
             // クエリ読込
             $stmt = $pdo->prepare($sql);
             // クエリ実行
