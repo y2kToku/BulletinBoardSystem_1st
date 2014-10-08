@@ -13,6 +13,7 @@
 require_once("../model/DbPdo.php");
 // ログイン画面から変数取得
 $userID = filter_input(INPUT_POST, "userID");
+
 // ページャ設定用変数
 $dispLimit = 10;
 $page = filter_input(INPUT_GET, "page");
@@ -46,10 +47,11 @@ $offset = "";
                     <div style="float: left; width: 70%;">
                         <h2>とくとく掲示板β ver. 0.0.1</h2>
                         <!-- スレッド作成 -->
-                        <form id="makeCategoryForm" name="makeCategoryForm" action="../controller/makeCategory.php" method="GET">
+                        <form id="makeCategoryForm" name="makeCategoryForm" action="../controller/categoryController.php" method="GET">
                             カテゴリ名：<textarea name="title" cols="30" rows="5"></textarea><br />
-                            <input type="hidden" name="userID" value="$userID">
-                            <input type="submit" name="make" value="作成">
+                            <input type="hidden" name="userID" value="<?php echo $userID; ?>">
+                            <input type="hidden" name="action" value="makeCategory">
+                            <input type="submit" value="作成">
                         </form>
                     </div>
                     <!-- カテゴリ表示フォーム -->
