@@ -5,6 +5,13 @@
         ２.ログインボタン押下後、カテゴリ選択画面に遷移する
         ３.「コチラ」リンク押下後、サインアップ画面に遷移する
 *****************************************************************************************-->
+<?php
+// 自ファイルURLの変数取得
+$url = filter_input(INPUT_SERVER, $_SERVER['REQUEST_URI']);
+$params[] = explode("/", $url);
+$fileType = $params[1];
+$fileName = $params[2];
+?>
 
 <html>
     <head>
@@ -26,7 +33,7 @@
                     </div>
                 </div>
                 <!-- ユーザ入力フォーム -->
-                <form id="loginForm" name="loginForm" action="../controller/loginCheck.php" method="POST">
+                <form id="loginForm" name="loginForm" action="../controller/loginController.php" method="POST">
                     <div style="height: 600px;">
                         <table>
                             <tr>

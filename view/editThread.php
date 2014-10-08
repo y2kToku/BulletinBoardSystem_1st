@@ -33,8 +33,8 @@
                         <input type="button" name="btnBack" value="戻る" onclick="history.back()">
                         <!--- ログアウトボタン -->
                         <input type="button" name="btnLogout" value="ログアウト" onclick="location.href = 'logout.php'">
-                        <!-- TODO 何か画像を添付する -->
-                        <img style="height: 100px; width: 100px;" src="sample.jpg">
+                        <!-- 画像 -->
+                        <img style="height: 100px; width: 100px;" src="../sample.jpg" alt="">
                     </div>
                     <div style="float: left; width: 70%;">
                         <h2>とくとく掲示板β ver. 0.0.1</h2>

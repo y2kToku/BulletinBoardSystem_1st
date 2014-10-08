@@ -52,10 +52,13 @@ Class DbPdo extends PDO {
             $stmt = $pdo->prepare($sql);
             // クエリ実行
             $stmt->execute();
+            // 結果取得用配列
+            $result = array();
             // 実行結果取得
             foreach ($stmt as $row) {
-                return $row;
+                $result[] = $row;
             }
+            return $result;
         } catch (PDOException $e) {
             // データベース接続失敗
             exit('データベース接続失敗。' . $e->getMessage());

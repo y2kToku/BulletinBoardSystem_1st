@@ -15,6 +15,8 @@
     </head>
     <body>
         <?php
+        // DB接続クラス読み込み
+        require_once("../model/DbPdo.php");
         // サインアップ画面から変数を取得
         $name = filter_input(INPUT_POST, "name");
         $name_kana = filter_input(INPUT_POST, "nameKana");
@@ -42,38 +44,25 @@
         }
 
         if (!$err_flg) {
-            // サーバ接続
-            $link = mysql_connect('localhost', 'root', 'root');
-            if (!$link) {
-                die('接続失敗です。' . mysql_error());
-            }
-            // DB選択
-            $db_selected = mysql_select_db('BulltinBoardSystem', $link);
-            if (!$db_selected) {
-                die('DB選択失敗です。' . mysql_error());
-            }
-
-            // MySQLに対する処理
-            mysql_set_charset('utf8');
             // アカウント情報の重複チェック
-            $sql_check = "SELECT COUNT(*) AS cnt FROM login_users WHERE address = '$mailAddress' AND password = '$password' AND del_flg = 0;";
-            $result_check = mysql_query($sql_check);
-            $row = mysql_fetch_assoc($result_check);
-            $cnt = $row['cnt'];
-            if ($cnt > 0) {
-                echo 'このアカウント情報は登録済みです。<br />別のアカウント（メールアドレス）を使用してください。';
-                return;
+            $sql_check = "SELECT * FROM login_users WHERE address = '" . $mailAddress . "' AND password = '" . $password . "' AND del_flg = 0;";
+            $cntUser = DbPdo::CountPdo($sql_check);
+            if ($cntUser > 0) {
+                exit('このアカウント情報は登録済みです。<br />別のアカウント（メールアドレス）を使用してください。');
             } else {
                 // サインアップ処理
-                $sql_signup = "INSERT INTO login_users(address, name, name_kana, password_tmp, password, password_new, hint, admin_flg, creater, created, updater)
-					VALUES ('$mailAddress', '$name', '$name_kana', '$password', '$password', '$password', '$hint', '$admin_flg', 1, now(), 1);";
-                $result_signup = mysql_query($sql_signup);
-                if (!$result_signup) {
-                    echo 'サインアップできません。<br />お手数ですが、もう一度サインアップを行ってください。';
-                    return;
+                $sql = "INSERT INTO login_users(address, name, name_kana, password_tmp, password, password_new, hint, admin_flg, creater, created, updater)
+					VALUES ('" . $mailAddress . "', '" . $name . "', '" . $name_kana . "', '" . $password . "', '" . $password . "', '" . $password . "', '" . $hint . "', '" . $admin_flg . "', 1, now(), 1)";
+                $result = DbPdo::InsUpdDelPdo($sql);
+                if (!$result) {
+                    exit('サインアップできません。<br />お手数ですが、もう一度サインアップを行ってください。');
                 } else {
+                    // サインアップ処理後、登録したユーザーID取得
+                    $sql_userID = "SELECT * FROM login_users WHERE address = '" . $mailAddress . "' AND del_flg = 0";
+                    $result_userID = DbPdo::SelectPdo($sql_userID);
                     ?>
                     <form name="signupCheckForm" action="../view/dispCategories.php" method="POST">
+                        <input type="hidden" name="userID" value="$result_userID[0]['id']">
                         <input type="hidden" name="name" value="$name">
                         <input type="hidden" name="nameKana" value="$nameKana">
                         <input type="hidden" name="mailAddress" value="$mailAddress">

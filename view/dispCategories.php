@@ -13,7 +13,6 @@
 require_once("../model/DbPdo.php");
 // ログイン画面から変数取得
 $userID = filter_input(INPUT_POST, "userID");
-$userName = filter_input(INPUT_POST, "userName");
 // ページャ設定用変数
 $dispLimit = 10;
 $page = filter_input(INPUT_GET, "page");
@@ -83,7 +82,6 @@ $offset = "";
                         $cntCategories = DbPdo::CountPdo($sql_all);
                         // 表示カテゴリデータ
                         $dispCategoris = DbPdo::SelectPdo($sql);
-                        // 
                         if ($cntCategories == 0 || !isset($dispCategoris)) {
                             exit('データを取得できませんでした。');
                         }
@@ -95,40 +93,25 @@ $offset = "";
                         <?php
                         // ページャ
                         // カテゴリ登録件数が０件の場合
-                        if (count($allArray) == 0) {
-                            echo '現在、登録されているカテゴリはありません。';
-                            return;
+                        if ($cntCategories == 0) {
+                            exit('現在、登録されているカテゴリはありません。');
                         }
-                        if (count($dispArray) < $dispLimit) {
-                            $dispLimit = count($dispArray);
+                        if ($cntCategories < $dispLimit) {
+                            $dispLimit = $cntCategories;
                         }
                         for ($i = 0; $i < $dispLimit; $i++) {
-                            // サーバ接続
-                            $link = mysql_connect('localhost', 'root', 'root');
-                            if (!$link) {
-                                die('接続失敗です。' . mysql_error());
-                            }
-                            // DB選択
-                            $db_selected = mysql_select_db('BulltinBoardSystem', $link);
-                            if (!$db_selected) {
-                                die('DB選択失敗です。' . mysql_error());
-                            }
-
-                            // MySQLに対する処理
-                            mysql_set_charset('utf8');
-
+                            // 各カテゴリに紐づくスレッド数を取得
+                            $sql_cntThreads = "SELECT * FROM threads WHERE category_id = " . "'" . $dispCategoris[$i]['id'] . "'" . " AND del_flg = 0";
+                            $cntThreads = DbPdo::CountPdo($sql_cntThreads);
                             // 各カテゴリに紐づくスレッドの最新更新日時を取得
-                            if ($dispArray[$i][0]['cnt_comment'] > 0) {
-                                $sql_latest_updated = "SELECT updated AS latestUpdated FROM threads WHERE category_id = " . $dispArray[$i][0]['id'] . " AND del_flg = 0 ORDER BY updated DESC LIMIT 1";
-                                $result_latest_updated = mysql_query($sql_latest_updated);
-                                if (!$result_latest_updated) {
-                                    echo 'データを取得できませんでした。';
-                                    return;
-                                }
-                                $row = mysql_fetch_assoc($result_latest_updated);
-                                $latestUpdated = $row['latestUpdated'];
+                            if ($cntThreads > 0) {
+                                // 各カテゴリにスレッドが紐づいている場合、紐づいているスレッド内で最新更新日を取得
+                                $sql_latest_updated = "SELECT updated FROM threads WHERE category_id = " . "'" . $dispCategoris[$i]['id'] . "'" . " AND del_flg = 0 ORDER BY updated DESC LIMIT 1";
+                                $result = DbPdo::SelectPdo($sql_latest_updated);
+                                $latestUpdated = $result[0]['updated'];
                             } else {
-                                $latestUpdated = $dispArray[$i][0]['updated'];
+                                // 各カテゴリにスレッドが紐づいていない場合、カテゴリの更新日を取得
+                                $latestUpdated = $dispCategoris[$i]['updated'];
                             }
                             ?>
                             <!-- カテゴリ表示フォーム -->
@@ -136,10 +119,10 @@ $offset = "";
                                 <table>
                                     <tr>
                                         <td style="width: 400px;">
-                                            ●<?php echo $dispArray[$i][0]['title']; ?>
+                                            ●<?php echo $dispCategoris[$i]['title']; ?>
                                         </td>
                                         <td style="width: 150px;">
-                                            スレッド数：<?php echo $dispArray[$i][0]['cnt_comment']; ?>
+                                            スレッド数：<?php echo $dispCategoris[$i]['cnt_comment']; ?>
                                         </td>
                                         <td style="width: 300px;">
                                             最新更新日時：<?php echo $latestUpdated; ?>
@@ -147,8 +130,7 @@ $offset = "";
                                         <td style="width: 100px;">
                                             <!-- カテゴリIDをGETパラメータで渡す -->
                                             <input type="hidden" name="userID" value="<?php echo $userID; ?>">
-                                            <input type="hidden" name="userName" value="<?php echo $userName; ?>">
-                                            <input type="hidden" name="categoryID" value="<?php echo $dispArray[$i][0]['id']; ?>">
+                                            <input type="hidden" name="categoryID" value="<?php echo $dispCategoris[$i]['id']; ?>">
                                             <input type="submit" value="スレッド表示画面へ">
                                         </td>
                                     </tr>
