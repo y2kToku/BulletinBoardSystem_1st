@@ -41,6 +41,3 @@ switch ($beforeDisp) {
     default:
         break;
 }
-
-
-

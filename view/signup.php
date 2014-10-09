@@ -28,7 +28,7 @@
                     </div>
                 </div>
                 <!-- ユーザ入力フォーム -->
-                <form id="loginForm" name="loginForm" action="../controller/signupCheck.php" method="POST">
+                <form id="loginForm" name="loginForm" action="../controller/signupController.php" method="POST">
                     <div style="height: 600px;">
                         <table>
                             <tr>
