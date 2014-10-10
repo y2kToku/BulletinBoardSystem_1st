@@ -6,6 +6,9 @@
         ３.ヒントはフリーワード入力で、パスワードを忘れた場合の検索キーとしてアカウント名と共に使用する
         ４.登録ボタン押下後、カテゴリ選択画面に遷移する
 *****************************************************************************************-->
+<?php
+session_start();
+?>
 <html>
     <head>
         <meta charset="utf-8">
@@ -28,7 +31,7 @@
                     </div>
                 </div>
                 <!-- ユーザ入力フォーム -->
-                <form id="loginForm" name="loginForm" action="../controller/signupCheck.php" method="POST">
+                <form id="signupForm" name="signupForm" action="../controller/signupController.php" method="POST">
                     <div style="height: 600px;">
                         <table>
                             <tr>

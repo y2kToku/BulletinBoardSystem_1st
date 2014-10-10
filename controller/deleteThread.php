@@ -5,6 +5,9 @@
         ２.スレッド削除機能（権限制限：管理者のみ(admin_flg == true)）
         ３.スレッド削除実行後、スレッド表示画面に遷移させる
 *****************************************************************************************-->
+<?php
+session_start();
+?>
 <!DOCTYPE html>
 <html>
     <head>
@@ -13,32 +16,21 @@
     </head>
     <body>
         <?php
+        // DB接続クラス読み込み
+        require_once("../model/DbPdo.php");
         // スレッド表示画面から変数取得
         $threadID = filter_input(INPUT_GET, "threadID");
         $categoryID = filter_input(INPUT_GET, "categoryID");
 
         // 権限チェック
         // $sql_chkUser = "SELECT * FROM login_users WHERE id = ".$userID;
-        // サーバ接続
-        $link = mysql_connect('localhost', 'root', 'root');
-        if (!$link) {
-            die('接続失敗です。' . mysql_error());
-        }
-        // DB選択
-        $db_selected = mysql_select_db('BulltinBoardSystem', $link);
-        if (!$db_selected) {
-            die('DB選択失敗です。' . mysql_error());
-        }
-        // MySQLに対する処理
-        mysql_set_charset('utf8');
         // スレッド削除
-        $sql = "UPDATE threads SET del_flg = 1 WHERE id = '$threadID' AND del_flg = 0";
-        $result = mysql_query($sql);
+        $sql = "UPDATE threads SET del_flg = 1 WHERE id = '" . $threadID . "' AND del_flg = 0";
+        $result = DbPdo::InsUpdDelPdo($sql);
         if (!$result) {
             exit('データを削除できませんでした。');
         }
         ?>
-
         <!-- スレッド表示画面に遷移 -->
         <div>スレッドを削除できました。</div>
         <br />

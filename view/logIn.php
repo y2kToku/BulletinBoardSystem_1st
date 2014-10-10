@@ -5,7 +5,9 @@
         ２.ログインボタン押下後、カテゴリ選択画面に遷移する
         ３.「コチラ」リンク押下後、サインアップ画面に遷移する
 *****************************************************************************************-->
-
+<?php
+session_start();
+?>
 <html>
     <head>
         <meta charset="utf-8">
@@ -26,7 +28,7 @@
                     </div>
                 </div>
                 <!-- ユーザ入力フォーム -->
-                <form id="loginForm" name="loginForm" action="../controller/loginCheck.php" method="POST">
+                <form id="loginForm" name="loginForm" action="../controller/loginController.php" method="POST">
                     <div style="height: 600px;">
                         <table>
                             <tr>
