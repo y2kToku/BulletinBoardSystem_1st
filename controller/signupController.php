@@ -9,6 +9,7 @@
 *****************************************************************************************-->
 
 <?php
+session_start();
 // ログインモデルクラス読み込み
 require_once("../model/login_user.php");
 
@@ -25,21 +26,21 @@ $err_flg = false;
 
 // アカウント情報の重複チェック
 if (login_user::ChkUniqAccountS($mailAddress, $password, $password_confirm) == "OK") {
-    // サインアップ処理
+// サインアップ処理
     if (login_user::InsUser($mailAddress, $name, $name_kana, $password, $hint, $admin_flg)) {
-        // サインアップ処理後、登録したユーザーID取得
+// サインアップ処理後、登録したユーザーID取得
         $userID = login_user::GetUserID($mailAddress, $password);
-        // ログイン処理成功時、カテゴリ表示画面にPOSTでアカウント情報を保持して遷移する
+// ユーザIDをセッションに格納
+        $_SESSION['userID'] = $userID;
+// サインアップ処理成功後、画面切替画面に遷移
         echo <<< EOM
 <html>
 <head><title></title>
 </head>
 <body>
-<!-- ログイン処理成功時、カテゴリ表示画面にPOSTでアカウント情報を保持して遷移する -->
-<form id="signupCheckForm" name="signupCheckForm" action="../view/dispCategories.php" method="POST">
-<input type="hidden" name="userID" value="$userID">
+<form name="signupForm" action="./changeDisp.php" method="POST">
 <input type="hidden" name="action" value="signup">
-<input type="submit" value="カテゴリ表示画面へ">
+<script language="JavaScript">document.signupForm.submit();</script>
 </form>
 </body>
 </html>

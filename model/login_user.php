@@ -72,9 +72,7 @@ class login_user {
     // サインアップ処理
     public function InsUser($mailAddress, $name, $name_kana, $password, $hint, $admin_flg) {
         $sql = "INSERT INTO login_users(address, name, name_kana, password_tmp, password, password_new, hint, admin_flg, creater, created, updater) VALUES ('" . $mailAddress . "', '" . $name . "', '" . $name_kana . "', '" . $password . "', '" . $password . "', '" . $password . "', '" . $hint . "', '" . $admin_flg . "', 1, now(), 1)";
-        echo 'SQL:' . $sql;
         $result = DbPdo::InsUpdDelPdo($sql);
-        echo 'result:' . $result;
         return $result;
     }
 
