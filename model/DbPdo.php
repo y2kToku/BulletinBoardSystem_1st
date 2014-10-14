@@ -23,8 +23,6 @@ Class DbPdo extends PDO {
     // データセット
     protected static $dsn;
 
-    // TODO 後で調べること！PDO接続について、以下サイトと何が異なるのか？
-    // 【参照】http://rasukaru55.sitemix.jp/phppdo.php
     public function __construct() {
         parent::__construct(self::DB_URL, self::USER, self::PW, array(PDO::MYSQL_ATTR_INIT_COMMAND => "SET CHARACTER SET `utf8`")
         );

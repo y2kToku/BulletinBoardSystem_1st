@@ -1,7 +1,16 @@
 <?php
 session_start();
-require_once("../model/DbPdo.php");
 
+/*
+ * 画面名：カテゴリ表示画面
+ * 機能概要：
+ * カテゴリ全件の一覧表示
+ * カテゴリ作成
+ * ログアウト
+ * ソート
+ * ページャ
+ * 紐づくスレッド表示画面への遷移
+ */
 // 初回表示時、表示データ取得
 if (filter_input(INPUT_POST, "action") == "firstDisp") {
     $dispDefData = $_SESSION['categoryDispDefData'];
@@ -15,9 +24,7 @@ if (isset($dispStatus)) {
 }
 
 $page = filter_input(INPUT_GET, "page");
-if (isset($page)) {
-    $dispPage = $page;
-} else {
+if (!isset($page)) {
     $dispPage = 1;
 }
 $offset = "";
@@ -28,6 +35,7 @@ $offset = "";
         <meta charset="utf-8">
         <title>カテゴリ表示</title>
         <link rel="stylesheet" type="text/css" href="../css/basic.css" />
+        <script type="text/javascript"></script>
     </head>
     <body>
         <div id="wrapper" style="width: 1440px; height: 900px; background-color: #F0FFFF;">
@@ -36,10 +44,8 @@ $offset = "";
                 <!-- ロゴ＆説明 -->
                 <div style="height: 240px;">
                     <div style="float: left; width: 30%;">
-                        <!-- 戻るボタン -->
-                        <input type="button" name="btnBack" value="戻る" onclick="history.back()">
                         <!--- ログアウトボタン -->
-                        <input type="button" name="btnLogout" value="ログアウト" onclick="location.href = 'logout.php'">
+                        <input type="button" name="btnLogout" value="ログアウト" onclick="location.href = './logout.php'">
                         <img style="height: 100px; width: 100px;" src="../sample.jpg" alt="">
                     </div>
                     <div style="float: left; width: 70%;">
@@ -55,17 +61,14 @@ $offset = "";
                     <div style="height: 600px;">
                         <!-- ソート順選択 -->
                         <div id="baseSpace1">
-                            <form id="sortCategoriesForm" name="sortCategoriesForm" action="../controller/categoryController.php" method="GET">
-                                <a href="?page=<?php echo $dispPage; ?>&sort=updated&order=DESC">新しい順</a>
-                                <a href="?page=<?php echo $dispPage; ?>&sort=updated&order=ASC">古い順</a>
-                                <a href="?page=<?php echo $dispPage; ?>&sort=cnt_comment&order=DESC">コメント数</a>
-                                <input type="hidden" name="action" value="sort">
-                            </form>
+                            <a href="../controller/categoryController.php?action=firstDisp&page=<?php echo $dispPage; ?>&sort=updated&order=DESC">新しい順</a>
+                            <a href="../controller/categoryController.php?action=firstDisp&page=<?php echo $dispPage; ?>&sort=updated&order=ASC">古い順</a>
+                            <a href="../controller/categoryController.php?action=firstDisp&page=<?php echo $dispPage; ?>&sort=cnt_comment&order=DESC">コメント数</a>
                         </div>
                         <!-- カテゴリ表示フォーム -->
                         <!-- 画面表示データ配列からmaxPageを除外する為、-1する -->
                         <?php for ($i = 0; $i < COUNT($dispDefData) - 1; $i++) { ?>
-                            <form id="dispCategoriesForm" name="dispCategoriesForm" action="./dispThreads.php" method="GET">
+                            <form id="dispCategoriesForm" name="dispCategoriesForm" action="../controller/threadController.php" method="GET">
                                 <table>
                                     <tr>
                                         <td style="width: 400px;">
@@ -79,8 +82,8 @@ $offset = "";
                                         </td>
                                         <td style="width: 100px;">
                                             <!-- カテゴリIDをGETパラメータで渡す -->
-                                            <input type="hidden" name="userID" value="<?php echo $_SESSION['id']; ?>">
                                             <input type="hidden" name="categoryID" value="<?php echo $dispDefData[$i]['id']; ?>">
+                                            <input type="hidden" name="action" value="firstDispThreads">
                                             <input type="submit" value="スレッド表示画面へ">
                                         </td>
                                     </tr>
@@ -90,7 +93,7 @@ $offset = "";
                         <!-- ページャ表示 -->
                         <div id="baseSpace1" style="text-align: center;">
                             <?php for ($i = 1; $i <= $dispDefData['maxPage']; $i++) { ?>
-                                <a href="?page=<?php echo $i; ?>"><?php echo $i; ?></a>
+                                <a href="../controller/categoryController.php?action=firstDisp&page=<?php echo $i; ?>"><?php echo $i; ?></a>
                             <?php } ?>
                         </div>
                     </div>

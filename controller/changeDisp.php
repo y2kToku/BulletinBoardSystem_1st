@@ -11,9 +11,9 @@ $beforeDisp = filter_input(INPUT_POST, "action");
 // 各遷移元画面により遷移先画面を設定する
 switch ($beforeDisp) {
 // 遷移元画面：ログイン画面
-case 'login':
+    case 'login':
 // 遷移先画面：カテゴリコントローラ
-echo <<< EOM
+        echo <<< EOM
 <html>
 <head><title></title>
 </head>
@@ -25,12 +25,12 @@ echo <<< EOM
 </body>
 </html>
 EOM;
-break;
+        break;
 
 // 遷移元画面：サインアップ画面
-case 'signup':
+    case 'signup':
 // 遷移先画面：カテゴリコントローラ
-echo <<< EOM
+        echo <<< EOM
 <html>
 <head><title></title>
 </head>
@@ -42,14 +42,14 @@ echo <<< EOM
 </body>
 </html>
 EOM;
-break;
+        break;
 
 //遷移元画面：カテゴリコントローラ
-case 'dispDef':
+    case 'dispDef':
 // カテゴリ画面初期表示データ取得
 //        $dispDefData = filter_input(INPUT_POST, "dispDefData");
 // 遷移先画面：カテゴリ表示画面
-echo <<< EOM
+        echo <<< EOM
 <html>
 <head><title></title>
 </head>
@@ -61,9 +61,25 @@ echo <<< EOM
 </body>
 </html>
 EOM;
-break;
+        break;
 
-default:
-break;
+// 遷移元画面：スレッドコントローラ
+    case 'threadDispDef':
+        // 遷移先画面：スレッド表示画面
+        echo <<< EOM
+<html>
+<head><title></title>
+</head>
+<body>
+<form name="mvDefThreadForm" action="../view/dispThreads.php" method="POST">
+<input type="hidden" name="action" value="firstDisp">
+<script language="JavaScript">document.mvDefThreadForm.submit();</script>
+</form>
+</body>
+</html>
+EOM;
+        break;
+    default:
+        break;
 }
 
