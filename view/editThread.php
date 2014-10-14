@@ -19,7 +19,6 @@ session_start();
         <?php
         // スレッド表示画面から変数取得
         $threadID = filter_input(INPUT_GET, "threadID");
-        $categoryID = filter_input(INPUT_GET, "categoryID");
         $creater = filter_input(INPUT_GET, "creater");
         $created = filter_input(INPUT_GET, "created");
         $content = filter_input(INPUT_GET, "content");
@@ -41,7 +40,7 @@ session_start();
                     <div style="float: left; width: 70%;">
                         <h2>とくとく掲示板β ver. 0.0.1</h2>
                         <!-- スレッド編集 -->
-                        <form id="editThreadForm" name="editThreadForm" action="../controller/editThreadLogic.php" method="GET">
+                        <form id="editThreadForm" name="editThreadForm" action="../controller/threadController.php" method="GET">
                             <table>
                                 <tr>
                                     <td> 通番：<?php echo $threadID; ?>
@@ -54,7 +53,7 @@ session_start();
                                         <!-- 写真 -->
                                         <textarea name="content" cols="30" rows="5"><?php echo $content; ?></textarea>
                                         <input type="hidden" name="threadID" value="<?php echo $threadID; ?>">
-                                        <input type="hidden" name="categoryID" value="<?php echo $categoryID; ?>">
+                                        <input type="hidden" name="action" value="editThread">
                                     </td>
                                     <td id="baseSpace1">
                                         <input type="submit" value="修正">

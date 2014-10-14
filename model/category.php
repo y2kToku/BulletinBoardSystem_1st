@@ -21,29 +21,39 @@ $err_flg = false;
 class category {
 
     // カテゴリ表示画面_初回表示時
-    public function getDefCategories($dispLimit) {
-        // 表示用_スレッド更新日時を含まない
-        $dispData = array();
+    public function getDefCategories($dispLimit, $dispPage, $sort, $order) {
         // カテゴリ全件取得用
         $sql_all = "SELECT * FROM categories WHERE del_flg = 0";
         // カテゴリ画面表示用
         $sql = $sql_all;
+        // ソート条件を追加
+        if (isset($sort) && isset($order)) {
+            // カテゴリ表示画面にてソートが押された場合
+            $sql = $sql . " ORDER BY " . $sort . " " . $order;
+        } else {
+            // カテゴリ表示画面の初回表示の場合
+            $sql = $sql . " ORDER BY id ASC";
+        }
         // ページャ条件を追加
         if (isset($dispLimit)) {
+            if (!isset($dispPage)) {
+                $dispPage = 1;
+            }
             // 初回表示時、1ページ目を表示する為、OFFSETは0にする
-            $offset = 0;
-//            $offset = $dispLimit * ($dispPage - 1);
+            $offset = $dispLimit * ($dispPage - 1);
             $sql = $sql . " LIMIT " . $dispLimit . " OFFSET " . $offset;
         }
         // カテゴリ全件のレコード数
         $cntCategories = DbPdo::CountPdo($sql_all);
         // 表示カテゴリデータ
         $dispCategoris = DbPdo::SelectPdo($sql);
-        if ($cntCategories == 0 || !isset($dispCategoris)) {
-            exit('データを取得できませんでした。');
-        }
         // 表示上限ページ数
-        $max_page = ceil($cntCategories / $dispLimit);
+        if ($cntCategories == 0) {
+            // 初回表示時
+            $max_page = 1;
+        } else {
+            $max_page = ceil($cntCategories / $dispLimit);
+        }
         // カテゴリ全件数 < 画面表示件数　の場合
         if ($cntCategories < $dispLimit) {
             $dispLimit = $cntCategories;

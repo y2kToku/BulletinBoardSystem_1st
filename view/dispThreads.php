@@ -1,25 +1,30 @@
-<!--*****************************************************************************************
-画面名：スレッド表示画面
-機能概要：掲示板の各カテゴリに紐づくスレッドを一覧表示する
-        １.スレッドを作成し、一覧表示に追加する（ページリロードする）
-        ２.各スレッドを一覧表示する（通番、アカウント名、作成（更新）日時、アカウントに紐づく写真、スレッド内容）
-        ３.１ページあたりの表示件数は、１０件
-        ４.スレッドの削除は、管理者しかできない
-*****************************************************************************************-->
 <?php
 session_start();
-// DB接続クラス読み込み
-require_once("../model/DbPdo.php");
-// カテゴリ表示画面から変数取得
-$userID = filter_input(INPUT_GET, "userID");
-$categoryID = filter_input(INPUT_GET, "categoryID");
 
-// ページャ設定用変数
-$dispLimit = 10;
+/*
+ * 画面名：スレッド表示画面
+ * 機能概要：
+ * 選択したカテゴリIDに紐づくスレッド全件の一覧表示
+ * スレッドの作成・修正・削除
+ * ログアウト
+ * ページャ
+ * カテゴリ表示画面への遷移
+ */
+
+// 初回表示時、表示データ取得
+if (filter_input(INPUT_POST, "action") == "firstDisp") {
+    $dispDefData = $_SESSION['threadDispDefData'];
+}
+
+// カテゴリ作成画面から変数取得
+$dispStatus = filter_input(INPUT_POST, "madeCategory");
+if (isset($dispStatus)) {
+// カテゴリ作成画面からカテゴリ表示画面に遷移した場合のみ、画面をリロードする
+    echo '<script type="text/javascript">window.location.reload();</script>';
+}
+
 $page = filter_input(INPUT_GET, "page");
-if (isset($page)) {
-    $dispPage = $page;
-} else {
+if (!isset($page)) {
     $dispPage = 1;
 }
 $offset = "";
@@ -28,8 +33,14 @@ $offset = "";
 <html>
     <head>
         <meta charset="utf-8">
-        <link rel="stylesheet" type="text/css" href="../css/basic.css" />
         <title>スレッド表示</title>
+        <link rel="stylesheet" type="text/css" href="../css/basic.css" />
+        <script type="text/javascript">
+            function submitChk() {
+                var ret = confirm("本当に削除してもよろしいですか？");
+                return ret;
+            }
+        </script>
     </head>
     <body>
         <div id="wrapper" style="width: 1440px; height: 900px; background-color: #F0FFFF;">
@@ -38,95 +49,61 @@ $offset = "";
                 <!-- ロゴ＆説明 -->
                 <div style="height: 240px;">
                     <div style="float: left; width: 30%;">
-                        <!-- カテゴリ選択画面へ -->
-                        <a href="./dispCategories.php">カテゴリ表示画面へ</a>
                         <!-- 戻るボタン -->
-                        <input type="button" name="btnBack" value="戻る" onclick="history.back()">
+                        <input type="button" name="btnBack" value="カテゴリ表示画面へ戻る" onclick="location.href = '../controller/categoryController.php?action=firstDisp'">
                         <!--- ログアウトボタン -->
                         <input type="button" name="btnLogout" value="ログアウト" onclick="location.href = 'logout.php'">
-                        <!-- 画像 -->
                         <img style="height: 100px; width: 100px;" src="../sample.jpg" alt="">
                     </div>
                     <div style="float: left; width: 70%;">
                         <h2>とくとく掲示板β ver. 0.0.1</h2>
                         <!-- スレッド作成 -->
-                        <form id="makeThreadForm" name="makeThreadForm" action="../controller/makeThread.php" method="GET">
-                            コメント：<textarea name="content" cols="30" rows="5"></textarea><br />
-                            <div id="baseSpace1">
-                                <input type="hidden" name="userID" value="<?php echo $userID; ?>" />
-                                <input type="hidden" name="categoryID" value="<?php echo $categoryID; ?>" />
-                                <input type="submit" name="make" value="作成" />
-                            </div>
+                        <form id="makeThreadForm" name="makeThreadForm" action="../controller/threadController.php" method="GET">
+                            内容：<textarea name="content" cols="30" rows="5"></textarea><br />
+                            <input type="hidden" name="action" value="makeThread">
+                            <input type="submit" value="スレッド作成">
                         </form>
                     </div>
-
+                    <!-- スレッド表示フォーム -->
                     <div style="height: 600px;">
-                        <!-- 各スレッド一覧表示 -->
-                        <?php
-                        // 選択したカテゴリに紐づくスレッドの件数取得
-                        $sql_all = "SELECT * FROM threads WHERE category_id = '" . $categoryID . "' AND del_flg = 0";
-                        $cntThreads = DbPdo::CountPdo($sql_all);
-                        if ($cntThreads != 0) {
-                            // 選択したカテゴリに紐づくスレッドが存在する場合
-                            // スレッド画面表示用
-                            $sql = $sql_all;
-                            // ページャ条件を追加
-                            if (isset($dispLimit)) {
-                                $offset = $dispLimit * ($dispPage - 1);
-                                $sql = $sql . " LIMIT " . $dispLimit . " OFFSET " . $offset;
-                            }
-                            $result = DbPdo::SelectPdo($sql);
-                            if (!$result) {
-                                exit('データを取得できませんでした。');
-                            }
-                            // 表示上限ページ数
-                            $max_page = ceil($cntThreads / $dispLimit);
-                            // 表示スレッド数
-                            if ($cntThreads < $dispLimit) {
-                                $dispLimit = $cntThreads;
-                            }
-                        }
-                        ?>
-                        <!-- 上記で配列に格納した値を画面用に取り出す -->
-
-                        <?php for ($i = 0; $i < $dispLimit; $i++) { ?>
+                        <!-- 画面表示データ配列からmaxPageを除外する為、-1する -->
+                        <?php for ($i = 0; $i < COUNT($dispDefData) - 1; $i++) { ?>
                             <table>
                                 <tr id="dispThreadsDiv">
-                                    <td>通番：<?php echo $result[$i]['id']; ?>
-                                        作成者名：<?php echo $result[$i]['creater']; ?>
-                                        更新日時：<?php echo $result[$i]['updated']; ?>
+                                    <td>通番：<?php echo $dispDefData[$i]['id']; ?>
+                                        作成者名：<?php echo $dispDefData[$i]['creater']; ?>
+                                        更新日時：<?php echo $dispDefData[$i]['updated']; ?>
                                     </td>
                                     <td>
-                                        内容：<?php echo $result[$i]['content']; ?>
+                                        内容：<?php echo $dispDefData[$i]['content']; ?>
                                     </td>
                                     <td>
                                         <form id="dispThreadsForm" name="dispThreadsForm" action="./editThread.php" method="GET">
-                                            <input type="hidden" name="threadID" value="<?php echo $result[$i]['id']; ?>">
-                                            <input type="hidden" name="categoryID" value="<?php echo $categoryID; ?>">
-                                            <input type="hidden" name="creater" value="<?php echo $result[$i]['creater']; ?>">
-                                            <input type="hidden" name="created" value="<?php echo $result[$i]['created']; ?>">
-                                            <input type="hidden" name="content" value="<?php echo $result[$i]['content']; ?>">
+                                            <input type="hidden" name="threadID" value="<?php echo $dispDefData[$i]['id']; ?>">
+                                            <input type="hidden" name="creater" value="<?php echo $dispDefData[$i]['creater']; ?>">
+                                            <input type="hidden" name="created" value="<?php echo $dispDefData[$i]['created']; ?>">
+                                            <input type="hidden" name="content" value="<?php echo $dispDefData[$i]['content']; ?>">
                                             <input type="submit" value="修正">
                                         </form>
-                                        <form id="dispThreadsForm" name="dispThreadsForm" action="../controller/deleteThread.php" method="GET">
-                                            <input type="hidden" name="threadID" value="<?php echo $result[$i]['id']; ?>">
-                                            <input type="hidden" name="categoryID" value="<?php echo $categoryID; ?>">
+                                        <form id="dispThreadsForm" name="dispThreadsForm" action="../controller/threadController.php" method="GET" onsubmit="return submitChk()">
+                                            <input type="hidden" name="threadID" value="<?php echo $dispDefData[$i]['id']; ?>">
+                                            <input type="hidden" name="action" value="dltThread">
                                             <input type="submit" value="削除">
                                         </form>
                                     </td>
                                 </tr>
                             </table>
                         <?php } ?>
-
-                        <!-- ページャー -->
+                        <!-- ページャ表示 -->
                         <div id="baseSpace1" style="text-align: center;">
-                            <?php for ($i = 1; $i <= $max_page; $i++) { ?>
-                                <a href="?userID=<?php echo $userID; ?>&categoryID=<?php echo $categoryID; ?>&page=<?php echo $i; ?>"><?php echo $i; ?></a>
+                            <?php for ($i = 1; $i <= $dispDefData['maxPage']; $i++) { ?>
+                                <a href="../controller/threadController.php?action=firstDispThreads&page=<?php echo $i; ?>"><?php echo $i; ?></a>
                             <?php } ?>
                         </div>
                     </div>
                 </div>
-                <div id="pageFooter"></div>
             </div>
+            <div id="pageFooter"></div>
+        </div>
     </body>
 </html>
